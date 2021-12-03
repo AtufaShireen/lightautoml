@@ -56,7 +56,7 @@ class BaseLinearRegressor(BaseRegressor):
         from sklearn.linear_model import LinearRegression
         args = {}
         tune_args = {}
-        tune_grid = {"fit_intercept": [True, False], "normalize": [True, False]}
+        tune_grid = {"fit_intercept": [True, False], "normalize": [True, False]} #
         # preprocess_steps = {'scale_data':True,'dummify_categoricals':True}
 
         super().__init__(

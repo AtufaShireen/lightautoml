@@ -67,12 +67,12 @@ class Validation(BaseEstimator ):
     def fit(self,dataset,y=None):
         logging.info("Preprocess step fit:Validation ")
         '''Performing filteration,drop target ->creates final col list'''
-        logging.info(f"Cols berfore validation:{dataset.columns}")
+        
         data = dataset.drop(self.target,axis=1)
         data = data.loc[:,~data.columns.duplicated()]
         data.drop(data.select_dtypes(include=["datetime64", "datetime64[ns, UTC]"]),axis=1,inplace=True,errors='ignore')   
         self.final_training_columns = data.columns.to_list()
-        logging.info(f"Cols after validation:{dataset.columns}")
+        
 
     def fit_transform(self, dataset, y=None):
         logging.info("Preprocess step fit_transform:Validation ")
@@ -88,7 +88,6 @@ class Validation(BaseEstimator ):
         '''For testing data, do filteration'''
         logging.info("Preprocess step transform:Validation ")
         data = dataset
-        logging.info(f"Cols berfore validation transform:{dataset.columns}")
         for i in self.final_training_columns:
             if i not in data.columns:
                 raise TypeError(
@@ -237,7 +236,8 @@ class CatDummies(BaseEstimator):
         data = dataset
         # will only do this if there are categorical variables
         if len(data.select_dtypes(include=("object")).columns) > 0:
-            data = data.drop(self.cols_to_drop,axis=1,errors='ignore')
+            if len(self.cols_to_drop) >=1:
+                data = data.drop(self.cols_to_drop,axis=1,errors='ignore')
             # only for test data
             self.data_nonc = data.select_dtypes(exclude=("object"))
             # fit only categorical columns
@@ -293,7 +293,6 @@ class ScaleTransformer(BaseEstimator):
         logging.info("Preprocess step transform:ScaleTransformer")
 
         data = dataset
-        
         # len of num cols is >0
         if len(self.num_cols)>0:
             num_data = pd.DataFrame(self.scaler.transform(data[self.num_cols]))

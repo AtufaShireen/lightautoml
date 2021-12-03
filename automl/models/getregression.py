@@ -56,24 +56,13 @@ class BestRegessionModel():
         self.data = data
         self.target = target
         self.scores_grid = {}
-
-    def preprocess_data(self,**kwargs):
-        logging.info(f'Started Preprocessing to train data')
-        self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',scale_data=True,scaling_method="zscore",
-                        target=self.target,dummify_categoricals=True,cluster_entire_data=False,**kwargs)
-        self.data =self.preprocess_pipe.fit_transform(self.data)
-
-    def inverse_preprocess_data(self,data):
-        logging.info(f'Started Preprocessing for prediction data')
-        self.preprocess_pipe.transform(data)
-        return data
-
-    def get_preprocess_pipe(self):
-        return self.preprocess_pipe
+        self.preprocess_pipe = None
 
     def fit(self):
         logging.info(f'Started ,FGetting Best model')
-        self.preprocess_data()
+        self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',scale_data=True,scaling_method="zscore",
+                target=self.target,dummify_categoricals=True,cluster_entire_data=False)
+        self.data = self.preprocess_pipe.fit_transform(self.data)
         X=self.data.drop(self.target,axis=1)
         y = self.data[self.target]
         self.meta_x_train,self.meta_x_test,self.meta_y_train,self.meta_y_test = train_test_split(X,y,test_size=0.33)
@@ -122,7 +111,7 @@ class BestRegessionModel():
         # regress_best_model = {} for storing complete info of best model
         self.all_regress_model_score = {}
         score_ =float('-inf')
-        estimates = ['lr','lasso','svr','dt','knn','elnet','rf'] #
+        estimates = ['lr', 'dt','lasso','svr','knn','elnet','rf']
 
         for i in estimates:
             # model.drop(['cluster_label'],axis=1,inplace=True)
@@ -188,5 +177,20 @@ class BestRegessionModel():
         return best_model
 
     def predict(self,X):
-        X =self.inverse_preprocess_data(X)
+        X =self.preprocess_pipe.transform(X)
         return self.max_model.model.predict(X)
+
+    
+    # def preprocess_data(self,**kwargs):
+    #     logging.info(f'Started Preprocessing to train data')
+    #     self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',scale_data=True,scaling_method="zscore",
+    #                     target=self.target,dummify_categoricals=True,cluster_entire_data=False,**kwargs)
+    #     self.preprocess_pipe.fit_transform(self.data)
+
+    # def inverse_preprocess_data(self,data):
+    #     logging.info(f'Started Preprocessing for prediction data')
+    #     self.preprocess_pipe.transform(data)
+    #     return data
+
+    # def get_preprocess_pipe(self):
+    #     return self.preprocess_pipe

@@ -61,6 +61,7 @@ class BestClassificationModel():
         self.target = target
         self.scores_grid = {}
         self.max_model = None
+        self.preprocess_pipe = None
     
     def preprocess_data(self,**kwargs):
         logging.info(f'Started Preprocessing to train data')
@@ -78,7 +79,9 @@ class BestClassificationModel():
 
     def fit(self):
         logging.info(f'Started ,Getting Best Classification model')
-        self.preprocess_data()
+        self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',scale_data=True,scaling_method="zscore",
+                target=self.target,dummify_categoricals=True,cluster_entire_data=False)
+        self.data = self.preprocess_pipe.fit_transform(self.data)
         X=self.data.drop(self.target,axis=1)
         y = self.data[self.target]
         self.meta_x_train,self.meta_x_test,self.meta_y_train,self.meta_y_test = train_test_split(X,y,test_size=0.33,stratify=y)
@@ -210,5 +213,5 @@ class BestClassificationModel():
         return label
 
     def predict(self,X):
-        X = self.inverse_preprocess_data(X)
+        X =self.preprocess_pipe.transform(X)
         return self.max_model.model.predict(X)
