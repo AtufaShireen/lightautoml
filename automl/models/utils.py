@@ -48,7 +48,7 @@ regress_boost_model={
 def get_best_param(estimator,tune_grid,X,y):
     logging.info(f"Tune grid: {tune_grid}")
     logging.info(f"Model name: {estimator}")
-    grid = BayesSearchCV(estimator=estimator,search_spaces=tune_grid,cv=3,n_jobs=-1) #cv=kfold
+    grid = BayesSearchCV(estimator=estimator,search_spaces=tune_grid,cv=10,n_jobs=-1,verbose=0) #cv=kfold default
     
     logging.info(f'Total iterations: {grid.total_iterations}')
     grid.fit(X,y,callback=on_step)

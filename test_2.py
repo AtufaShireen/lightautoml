@@ -23,8 +23,8 @@ dump(basemodel,'best-classif-model.joblib')
 dump(metrics,'classif-metrics.joblib')
 
 # #---------------------------Testing---------------------------------#
-pipe = load('regress_preprocess_pipe.joblib')
-model = load('best-regress-model.joblib')
+pipe = load('classif_preprocess_pipe.joblib')
+model = load('best-classif-model.joblib')
 print(model.max_model.modelname)
 print(model.max_model.get_params())
 predictions = model.predict(x_test)
@@ -50,17 +50,17 @@ test_df = pd.concat([x_test,y_test],axis=1)
 # #---------------------------Training-------------------------------#
 basemodel = getregression.BestRegessionModel(train_df,target)
 basemodel.fit() #fits to best model
-dump(basemodel.preprocess_pipe,'preprocess_pipe.joblib')
+dump(basemodel.preprocess_pipe,'regress_preprocess_pipe.joblib')
 metrics = basemodel.scores_grid
-dump(basemodel,'best-model.joblib')
-dump(metrics,'metrics.joblib')
+dump(basemodel,'best-regress-model.joblib')
+dump(metrics,'regress-metrics.joblib')
 print(metrics)
-#---------------------------Testing---------------------------------#
+##---------------------------Testing---------------------------------#
 # pipey = load('preprocess_pipe.joblib')
-model = load('best-model.joblib')
+model = load('best-regress-model.joblib')
 predictions = basemodel.predict(x_train)
-#-------------------------Score-------------------------------------#
+##-------------------------Score-------------------------------------#
 n_df = pd.DataFrame(list(zip(predictions,y_train)),columns=['predicts','actual'])
 print(n_df.head())
-print('SCORE:',mean_squared_error(n_df['actual'],n_df['predicts']))
+print('SCORE:',mean_squared_error(n_df['actual'],n_df['predicts'],squared=False))
 print(basemodel.scores_grid)
