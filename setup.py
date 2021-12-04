@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='light-automl',
-    version='1.0',
+    version='0.2',
     packages=find_packages(where="automl"),
     author='Atufa Shireen',
     package_dir={"": "automl"},
