@@ -11,7 +11,7 @@ plt.switch_backend('agg')
 import base64
 from io import BytesIO
 import logging
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 classify_models={
     'lr':BaseLogisticRegression(),
          'dt':BaseDecisionTreeClassifier(),
@@ -75,7 +75,7 @@ def plot_config(**kwargs):
         
         return encoded
 
-from skopt.utils import use_named_args
+# from skopt.utils import use_named_args
 
 # @use_named_args(space)
 # def objective(**params):
