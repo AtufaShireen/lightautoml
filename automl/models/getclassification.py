@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score,precision_score,recall_score,accuracy_score
 from automl.preprocessing.preprocessor import preprocess_path
 import logging
-
+import inspect
 logging.basicConfig(level=logging.INFO)
 class BestClassificationModel():
     """ 
@@ -56,33 +56,39 @@ class BestClassificationModel():
         >>> print(predictinos)
 
     """
-    def __init__(self,data,target):
+    def __init__(self,data,target,preprocess=True,preprocess_steps={},*args,**kwargs):
         self.data = data
         self.target = target
         self.scores_grid = {}
         self.max_model = None
         self.preprocess_pipe = None
-    
-    def preprocess_data(self,**kwargs):
-        logging.info(f'Started Preprocessing to train data')
-        self.preprocess_pipe = preprocess_path(data=self.data,ml_type='classification',scale_data=True,scaling_method="minmax",
-                                target=self.target,dummify_categoricals=True,cluster_entire_data=False,**kwargs)
-        self.data =self.preprocess_pipe.fit_transform(self.data)
-
-    def inverse_preprocess_data(self,data):
-        logging.info(f'Started Preprocessing for prediction data')
-        self.preprocess_pipe.transform(data)
-        return data
-    
-    def get_preprocess_pipe(self):
-        return self.preprocess_pipe
+        self.preprocess = preprocess
+        if preprocess:
+            if preprocess_steps:
+                steps = inspect.getargspec(preprocess_path).args
+                for key in preprocess_steps.keys():
+                    if key not in steps:
+                        raise ValueError("Invalid Parameter")
+                try:
+                    self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',target = target,**preprocess_steps)
+                    print("Done")
+                    print(self.preprocess_pipe)
+                except Exception as e:
+                    logging.info(f"Invalid value passed {e}")
+                    raise ValueError("Invalid value passed to parameter")
+            else:
+                self.preprocess_pipe = preprocess_path(data=self.data,ml_type='classification',scale_data=True,scaling_method="minmax",
+                    target=self.target,dummify_categoricals=True,cluster_entire_data=False,**kwargs)
+            
 
     def fit(self):
         logging.info(f'Started ,Getting Best Classification model')
-        self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',scale_data=True,scaling_method="zscore",
-                target=self.target,dummify_categoricals=True,cluster_entire_data=False)
-        self.data = self.preprocess_pipe.fit_transform(self.data)
+        if self.preprocess:
+            logging.info(f"Preprocessing the Training data")
+            self.data = self.preprocess_pipe.fit_transform(self.data)
         X=self.data.drop(self.target,axis=1)
+        if 'cluster_label' in X.columns:
+            X.drop('cluster_label',axis=1,inplace=True)
         y = self.data[self.target]
         self.meta_x_train,self.meta_x_test,self.meta_y_train,self.meta_y_test = train_test_split(X,y,test_size=0.33,stratify=y)
         self.standalone_model_ = self.get_best_standalone_estimate(self.meta_x_train,self.meta_y_train)
@@ -214,4 +220,19 @@ class BestClassificationModel():
 
     def predict(self,X):
         X =self.preprocess_pipe.transform(X)
+        if 'cluster_label' in X.columns:
+            X.drop('cluster_label',axis=1,inplace=True)
         return self.max_model.model.predict(X)
+
+    # def preprocess_data(self,**kwargs):
+    # logging.info(f'Started Preprocessing to train data')
+    # self.preprocess_pipe = preprocess_path(data=self.data,ml_type='classification',scale_data=True,scaling_method="minmax",
+    #         arget=self.target,dummify_categoricals=True,cluster_entire_data=False,**kwargs)
+    # self.data =self.preprocess_pipe.fit_transform(self.data)
+    # def inverse_preprocess_data(self,data):
+    #     logging.info(f'Started Preprocessing for prediction data')
+    #     self.preprocess_pipe.transform(data)
+    #     return data
+    
+    # def get_preprocess_pipe(self):
+    #     return self.preprocess_pipe

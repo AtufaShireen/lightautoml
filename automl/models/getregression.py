@@ -1,8 +1,10 @@
+from logging import log
 from automl.models.utils import *
 from automl.models.mlalgos import regression,ensemble
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error,mean_squared_error,r2_score
 from automl.preprocessing.preprocessor import preprocess_path
+import inspect
 
 logging.basicConfig(level=logging.INFO)
 class BestRegessionModel():
@@ -52,18 +54,36 @@ class BestRegessionModel():
     >>>    predictions = model.predict(data_test)   
     >>>    print(f1score(test_y,predictions))   
     '''
-    def __init__(self,data,target):
+    def __init__(self,data,target,preprocess=True,preprocess_steps={},*args,**kwargs):
         self.data = data
         self.target = target
         self.scores_grid = {}
-        self.preprocess_pipe = None
-
+        self.preprocess = preprocess
+        if preprocess:
+            if preprocess_steps:
+                steps = inspect.getargspec(preprocess_path).args
+                for key in preprocess_steps.keys():
+                    if key not in steps:
+                        raise ValueError("Invalid Parameter")
+                try:
+                    self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',target=target,**preprocess_steps)
+                    print("Done")
+                    print(self.preprocess_pipe)
+                except Exception as e:
+                    logging.info(f"Invalid value passed {e}")
+                    raise ValueError("Invalid value passed to parameter")
+            else:
+                self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',scale_data=True,scaling_method="zscore",
+                    target=self.target,dummify_categoricals=True,cluster_entire_data=False)
+            
     def fit(self):
         logging.info(f'Started ,FGetting Best model')
-        self.preprocess_pipe = preprocess_path(data=self.data,ml_type='regression',scale_data=True,scaling_method="zscore",
-                target=self.target,dummify_categoricals=True,cluster_entire_data=False)
-        self.data = self.preprocess_pipe.fit_transform(self.data)
+        if self.preprocess:
+            logging.info(f"Preprocessing the Training data")  
+            self.data = self.preprocess_pipe.fit_transform(self.data)
         X=self.data.drop(self.target,axis=1)
+        if 'cluster_label' in X.columns:
+            X.drop('cluster_label',axis=1,inplace=True)
         y = self.data[self.target]
         self.meta_x_train,self.meta_x_test,self.meta_y_train,self.meta_y_test = train_test_split(X,y,test_size=0.33)
         self.standalone_model_ = self.get_best_standalone_estimate(self.meta_x_train,self.meta_y_train)
@@ -181,6 +201,8 @@ class BestRegessionModel():
 
     def predict(self,X):
         X =self.preprocess_pipe.transform(X)
+        if 'cluster_label' in X.columns:
+            X.drop('cluster_label',axis=1,inplace=True)
         return self.max_model.model.predict(X)
 
     

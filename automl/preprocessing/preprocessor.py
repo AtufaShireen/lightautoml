@@ -386,17 +386,18 @@ class ClusterData(BaseEstimator):
     def __init__(self,target=None) -> None:
         '''Create cluster for data (min:2,max:20)'''
         self.target = target
+        # self.n_clusters = 3 #change to sqrt 
     def fit(self,dataset,y=None):
         logging.info("Preprocess step fit:ClusterData")
-
         wcss = []
-        data = dataset.drop(self.target,axis=1)
-        for i in range (1,10):  #hard coded
-            kmeans=KMeans(n_clusters=i,init='k-means++',random_state=42) # initializing the KMeans object
-            kmeans.fit(data) # fitting the data to the KMeans Algorithm
-            wcss.append(kmeans.inertia_)
-        self.kn = KneeLocator(range(1, 10), wcss, curve='convex', direction='decreasing')
-        self.kmeans = KMeans(n_clusters=self.kn.knee,init='k-means++',random_state=42)
+        data = dataset.drop(self.target,axis=1,errors='ignore')
+        print("-----------------Fit cluster data:",data.shape)
+        # for i in range (2,10):  #hard coded
+        #     kmeans=KMeans(n_clusters=i,init='k-means++',random_state=42) # initializing the KMeans object
+        #     kmeans.fit(data) # fitting the data to the KMeans Algorithm
+        #     wcss.append(kmeans.inertia_)
+        # self.kn = KneeLocator(range(1, 10), wcss, curve='convex', direction='decreasing')
+        self.kmeans = KMeans(n_clusters=5,init='k-means++',random_state=42)
         self.kmeans.fit(data)
 
     def transform(self,dataset,y=None):
@@ -436,12 +437,11 @@ class TargetTreat(BaseEstimator):
     def fit(self,dataset,y=None):
         logging.info("Preprocess step fit:TargetTreat")
         data = dataset
-        
-        
         if ((self.target !=None) and (data[(self.target)].dtypes=='object')):
         # remove row where target is NaN
             try:
                 data.dropna(subset=[self.target], inplace=True)
+                logging.warning("Found nan rows in target")
             except KeyError:
                 pass
             self.le.fit(data[self.target])
@@ -479,7 +479,7 @@ dummify_categoricals=True,
 remove_perfect_collinearity=False,
 target=None,data=None,
 cluster_entire_data=False,zerovar=True):
-
+   
     validates = Validation(
         ml_type=ml_type,
         target=target,
@@ -523,8 +523,10 @@ cluster_entire_data=False,zerovar=True):
             ("dummy", dummy),
             ("scaling", scaling),
             ("fix_perfect", fix_perfect),
-            ("target_treat",target_treat),
+            
             ("cluster_all", cluster_all),
+            ("target_treat",target_treat),
+            
         ]
     )    
     return pipe

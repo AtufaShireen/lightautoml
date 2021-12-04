@@ -6,3 +6,7 @@ __pycache__/
 .env
 test.py
 *.joblib
+dist/
+setup.cfg
+setup.py
+light_automl.egg-info
