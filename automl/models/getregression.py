@@ -1,7 +1,7 @@
 from automl.models.utils import *
 from automl.models.mlalgos import regression,ensemble
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error,mean_squared_error
+from sklearn.metrics import mean_absolute_error,mean_squared_error,r2_score
 from automl.preprocessing.preprocessor import preprocess_path
 
 logging.basicConfig(level=logging.INFO)
@@ -75,16 +75,19 @@ class BestRegessionModel():
 
         self.scores_grid = {
             'standalone': {
+                'r2': r2_score(self.meta_y_test,standalone_),
                 'mae':mean_absolute_error(self.meta_y_test,standalone_),
                 'mse': mean_squared_error(self.meta_y_test,standalone_),
                 'rmse': mean_squared_error(self.meta_y_test,standalone_,squared=False),
             },
             'boost': {
+                'r2': r2_score(self.meta_y_test,boost_),
                 'mae':mean_absolute_error(self.meta_y_test,boost_),
                 'mse': mean_squared_error(self.meta_y_test,boost_),
                 'rmse': mean_squared_error(self.meta_y_test,boost_,squared=False),
             },
             'bag': {
+                'r2': r2_score(self.meta_y_test,bag_),
                 'mae':mean_absolute_error(self.meta_y_test,bag_),
                 'mse': mean_squared_error(self.meta_y_test,bag_),
                 'rmse': mean_squared_error(self.meta_y_test,bag_,squared=False),
