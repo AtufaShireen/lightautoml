@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='light-automl',
-    version='0.2',
+    version='1.0.1',
     packages=find_packages(where="automl"),
     author='Atufa Shireen',
     package_dir={"": "automl"},
@@ -13,17 +13,20 @@ setup(name='light-automl',
     'Topic :: Software Development :: Build Tools',
     'License :: OSI Approved :: MIT License',   # Again, pick a license
     'Programming Language :: Python :: 3',      #Specify which pyhton versions that you want to support
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
   ],
   install_requires=[
-'joblib==1.1.0',
-'kneed==0.7.0',
-'matplotlib==3.5.0',
-'numpy==1.21.4',
-'pandas==1.3.4',  
-'scikit-learn==0.24.2',
-'scikit-optimize==0.9.0',
-'scikit-plot==0.3.7',
-'scipy==1.7.3',
-'xgboost==1.5.0',
+    'joblib==1.1.0',
+    'kneed==0.7.0',
+    'matplotlib==3.5.0',
+    'numpy==1.21.4',
+    'pandas==1.3.4',  
+    'scikit-learn==0.24.2',
+    'scikit-optimize==0.9.0',
+    'scikit-plot==0.3.7',
+    'scipy==1.7.3',
+    'xgboost==1.5.0',
 
-  ])
+  ],)

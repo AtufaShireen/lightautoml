@@ -9,3 +9,4 @@ test.py
 dist/
 setup.cfg
 light_automl.egg-info
+todo.txt
